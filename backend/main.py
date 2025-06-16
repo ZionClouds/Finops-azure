@@ -144,7 +144,13 @@ def send_email(filepath, total_cost):
     msg["Subject"] = "Azure Billing Summary"
     msg["From"] = EMAIL_USER
     msg["To"] = ", ".join(recipients)
-    msg.set_content(f"Azure Billing Summary Report\n\nTotal Cost: ${total_cost:.2f}")
+    msg.set_content(
+        f"Hello Team,\n\n"
+        f"Please find attached the latest *Monthly Azure Billing Summary Report*.\n\n"
+        f"Overall total cost across all resources(without discount): ${overall_total:.2f}\n\n"
+        f"Regards,\n"
+        f"DevOps Team"
+        )
 
     file_type, _ = mimetypes.guess_type(filepath)
     with open(filepath, "rb") as f:
