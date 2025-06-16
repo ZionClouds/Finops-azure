@@ -4,3 +4,4 @@ pydantic
 requests
 openpyxl
 email-validator
+python-dotenv
