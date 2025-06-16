@@ -199,7 +199,7 @@ async def scan():
             all_costs[sub_id] = costs
             index += 1
 
-        output_file = "reports/azure_cost_report.xlsx"
+        output_file = "/tmp/azure_cost_report.xlsx"
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         total_cost = generate_excel(all_costs, output_file)
         send_email(output_file, total_cost)
