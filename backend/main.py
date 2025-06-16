@@ -207,6 +207,7 @@ async def scan():
         return {"status": "success", "total_cost": total_cost}
 
     except Exception as e:
+        print("🔥 Exception occurred:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 # Entrypoint for local testing
