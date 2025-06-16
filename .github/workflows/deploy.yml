@@ -1,0 +1,64 @@
+name: Deploy finops Backend to GCP Cloud Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  
+  backend-deployment:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      GAR_REPO: "REPOSITORY"
+      BACKEND_SERVICE_NAME: "azure-finops-backend"
+      REGION: "us-central1"
+      PROJECT_ID: "zbala-1"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP using OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/187517077947/locations/global/workloadIdentityPools/github-pool-azure/providers/github-provider-azure "
+          service_account: "github-actions-sa-azure@zbala-1.iam.gserviceaccount.com"
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker for GCP Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build and Push Backend Docker Image
+        run: |
+          docker build --no-cache -t us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/azure-finops-backend/azure-finops-backend:latest ./backend
+          docker push us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/azure-finops-backend/azure-finops-backend:latest
+
+      - name: Deploy Backend to Cloud Run
+        run: |
+          gcloud run deploy "${{ env.BACKEND_SERVICE_NAME }}" \
+            --image=us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/azure-finops-backend/azure-finops-backend:latest \
+            --platform=managed \
+            --region="${{ env.REGION }}" \
+            --allow-unauthenticated \
+            --service-account="github-actions-sa-azure@zbala-1.iam.gserviceaccount.com" \
+            --memory=4Gi \
+
+      - name: Get Cloud Run URL
+        run: |
+          echo "Backend URL:"
+          gcloud run services describe ${{ env.BACKEND_SERVICE_NAME }} \
+            --platform managed --region ${{ env.REGION }} --format="value(status.url)"
+
+  
