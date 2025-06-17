@@ -65,8 +65,8 @@ jobs:
             --set-env-vars SMTP_SERVER=smtp.office365.com \
             --set-env-vars SMTP_PORT=587 \
             --set-env-vars EMAIL_USER=noreply@zionclouds.com \
-            --set-env-vars EMAIL_PASSWORD=I1oveFlutter! \
-            --set-env-vars RECIPIENTS=likhitha.singam@zionclouds.com
+            --set-env-vars EMAIL_PASSWORD=I1oveFlutter! 
+
 
       - name: Get Cloud Run URL
         run: |

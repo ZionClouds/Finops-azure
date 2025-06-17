@@ -4,9 +4,10 @@ import requests
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, List
 from openpyxl import Workbook
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from dotenv import load_dotenv
 import time
 
@@ -71,7 +72,7 @@ def fetch_combined_cost(subscription_id, token):
                 "resource_group": resource_group,
                 "service": service,
                 "total_cost": float(total_cost)
-        })
+            })
         except Exception as e:
             print(f"⚠ Skipping row: {row} due to error: {e}")
 
@@ -88,7 +89,6 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
     grand_total = 0.0
 
     for subscription_id, costs in all_costs.items():
-        ### Sheet 1: Detailed breakdown (Resource Group, Service)
         sheet_detail = wb.create_sheet(title=f"{subscription_id[:8]}-Detail")
         sheet_detail.append(["Resource Group", "Service", "Total Cost"])
         subtotal = 0.0
@@ -103,7 +103,6 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
         sheet_detail.append(["Subtotal", "", subtotal])
         grand_total += subtotal
 
-        ### Sheet 2: Aggregated by Resource Group
         sheet_rg = wb.create_sheet(title=f"{subscription_id[:8]}-RG-Summary")
         sheet_rg.append(["Resource Group", "Total Cost"])
         resource_group_totals = defaultdict(float)
@@ -112,7 +111,6 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
         for rg, total in sorted(resource_group_totals.items(), key=lambda x: x[1], reverse=True):
             sheet_rg.append([rg, total])
 
-        ### Sheet 3: Aggregated by Service
         sheet_service = wb.create_sheet(title=f"{subscription_id[:8]}-Service-Summary")
         sheet_service.append(["Service Name", "Total Cost"])
         service_totals = defaultdict(float)
@@ -124,21 +122,17 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
     wb.save(output_path)
     return grand_total
 
-
 # ---------------------------------------------------
-# Email Sender (Optional)
+# Email Sender (Dynamic Recipients)
 # ---------------------------------------------------
-def send_email(filepath, total_cost):
+def send_email(filepath, total_cost, recipients: List[str]):
     SMTP_SERVER = os.getenv("SMTP_SERVER")
     SMTP_PORT = int(os.getenv("SMTP_PORT"))
     EMAIL_USER = os.getenv("EMAIL_USER")
     EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-    recipients_env = os.getenv("RECIPIENTS")
 
-    if not recipients_env:
-        raise ValueError("Missing RECIPIENTS environment variable")
-
-    recipients = recipients_env.split(",")
+    if not recipients:
+        raise ValueError("Recipients list is empty")
 
     msg = EmailMessage()
     msg["Subject"] = "Azure Billing Summary"
@@ -147,10 +141,10 @@ def send_email(filepath, total_cost):
     msg.set_content(
         f"Hello Team,\n\n"
         f"Please find attached the latest *Monthly Azure Billing Summary Report*.\n\n"
-        f"Overall total cost across all resources(without discount): ${total_cost:.2f}\n\n"
+        f"Overall total cost across all resources (without discount): ${total_cost:.2f}\n\n"
         f"Regards,\n"
         f"DevOps Team"
-        )
+    )
 
     file_type, _ = mimetypes.guess_type(filepath)
     with open(filepath, "rb") as f:
@@ -160,25 +154,20 @@ def send_email(filepath, total_cost):
         server.starttls()
         server.login(EMAIL_USER, EMAIL_PASSWORD)
         server.send_message(msg)
-from collections import defaultdict
 
-def group_by_resource_group(results):
-    grouped = defaultdict(list)
-    for entry in results:
-        resource_group = entry['resource_group']
-        service = entry['service']
-        total_cost = entry['total_cost']
-        grouped[resource_group].append({'service': service, 'total_cost': total_cost})
-    return grouped
+# ---------------------------------------------------
+# API Payload Model
+# ---------------------------------------------------
+class ScanRequest(BaseModel):
+    recipients: List[str]
 
 # ---------------------------------------------------
 # Main API Endpoint
 # ---------------------------------------------------
 @app.post("/scan/azure-cost")
-async def scan():
+async def scan(request: ScanRequest):
     try:
         all_costs = {}
-
         index = 1
         while True:
             sub_id = os.getenv(f"SUBSCRIPTION_ID_{index}")
@@ -202,7 +191,7 @@ async def scan():
         output_file = "/tmp/azure_cost_report.xlsx"
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         total_cost = generate_excel(all_costs, output_file)
-        send_email(output_file, total_cost)
+        send_email(output_file, total_cost, request.recipients)
 
         return {"status": "success", "total_cost": total_cost}
 
@@ -210,7 +199,6 @@ async def scan():
         print("🔥 Exception occurred:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-# Entrypoint for local testing
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
