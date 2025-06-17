@@ -88,8 +88,18 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
     wb.remove(wb.active)
     grand_total = 0.0
 
+    # Map subscription IDs to friendly names
+    subscription_names = {
+        "5c5c5028-4a7e-435c-8430-6ece5f592ae2": "zion-ai",
+        "e21901bf-488a-4ded-b169-b694737e4c86": "zcs-admin"
+    }
+
     for subscription_id, costs in all_costs.items():
-        sheet_detail = wb.create_sheet(title=f"{subscription_id[:8]}-Detail")
+        # Use friendly name or fallback to prefix
+        friendly_name = subscription_names.get(subscription_id, subscription_id[:8])
+
+        ### Sheet 1: Detailed breakdown (Resource Group, Service)
+        sheet_detail = wb.create_sheet(title=f"{friendly_name}-Detail")
         sheet_detail.append(["Resource Group", "Service", "Total Cost"])
         subtotal = 0.0
         for entry in sorted(costs, key=lambda x: x["total_cost"], reverse=True):
@@ -103,7 +113,8 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
         sheet_detail.append(["Subtotal", "", subtotal])
         grand_total += subtotal
 
-        sheet_rg = wb.create_sheet(title=f"{subscription_id[:8]}-RG-Summary")
+        ### Sheet 2: Aggregated by Resource Group
+        sheet_rg = wb.create_sheet(title=f"{friendly_name}-RG-Summary")
         sheet_rg.append(["Resource Group", "Total Cost"])
         resource_group_totals = defaultdict(float)
         for entry in costs:
@@ -111,7 +122,8 @@ def generate_excel(all_costs: Dict[str, list], output_path: str):
         for rg, total in sorted(resource_group_totals.items(), key=lambda x: x[1], reverse=True):
             sheet_rg.append([rg, total])
 
-        sheet_service = wb.create_sheet(title=f"{subscription_id[:8]}-Service-Summary")
+        ### Sheet 3: Aggregated by Service
+        sheet_service = wb.create_sheet(title=f"{friendly_name}-Service-Summary")
         sheet_service.append(["Service Name", "Total Cost"])
         service_totals = defaultdict(float)
         for entry in costs:
