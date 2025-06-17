@@ -53,7 +53,7 @@ jobs:
             --region="${{ env.REGION }}" \
             --allow-unauthenticated \
             --service-account="github-actions-sa-azure@zbala-1.iam.gserviceaccount.com" \
-            --memory=4Gi 
+            --memory=4Gi \
             --set-env-vars SUBSCRIPTION_ID_1=5c5c5028-4a7e-435c-8430-6ece5f592ae2 \
             --set-env-vars TENANT_ID_1=e28d23e3-803d-418d-a720-c0bed39f77b6 \
             --set-env-vars CLIENT_ID_1=df36431f-d7d1-4bd8-abbe-20bb76a00b2a \
