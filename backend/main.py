@@ -147,7 +147,7 @@ def send_email(filepath, total_cost):
     msg.set_content(
         f"Hello Team,\n\n"
         f"Please find attached the latest *Monthly Azure Billing Summary Report*.\n\n"
-        f"Overall total cost across all resources(without discount): ${overall_total:.2f}\n\n"
+        f"Overall total cost across all resources(without discount): ${total_cost:.2f}\n\n"
         f"Regards,\n"
         f"DevOps Team"
         )
