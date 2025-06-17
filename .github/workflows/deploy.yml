@@ -53,7 +53,20 @@ jobs:
             --region="${{ env.REGION }}" \
             --allow-unauthenticated \
             --service-account="github-actions-sa-azure@zbala-1.iam.gserviceaccount.com" \
-            --memory=4Gi \
+            --memory=4Gi 
+            --set-env-vars SUBSCRIPTION_ID_1=5c5c5028-4a7e-435c-8430-6ece5f592ae2 \
+            --set-env-vars TENANT_ID_1=e28d23e3-803d-418d-a720-c0bed39f77b6 \
+            --set-env-vars CLIENT_ID_1=df36431f-d7d1-4bd8-abbe-20bb76a00b2a \
+            --set-env-vars CLIENT_SECRET_1=L2G8Q~gkVUagZisPZDKsiOP~TGUV50F_EDughaH6 \
+            --set-env-vars SUBSCRIPTION_ID_2=e21901bf-488a-4ded-b169-b694737e4c86 \
+            --set-env-vars TENANT_ID_2=e28d23e3-803d-418d-a720-c0bed39f77b6 \
+            --set-env-vars CLIENT_ID_2=bed76da5-75f7-4990-91a0-3ecc2131f4d8 \
+            --set-env-vars CLIENT_SECRET_2=~RD8Q~Eect5uZuvEN.lCEBPow85irCJ4bt~DFaWB \
+            --set-env-vars SMTP_SERVER=smtp.office365.com \
+            --set-env-vars SMTP_PORT=587 \
+            --set-env-vars EMAIL_USER=noreply@zionclouds.com \
+            --set-env-vars EMAIL_PASSWORD=I1oveFlutter! \
+            --set-env-vars RECIPIENTS=likhitha.singam@zionclouds.com,bala.nerusu@zionclouds.com
 
       - name: Get Cloud Run URL
         run: |
