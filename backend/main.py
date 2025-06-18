@@ -148,7 +148,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
 
     msg = EmailMessage()
     msg["Subject"] = "Azure Billing Summary"
-    msg["From"] = "ZCS FinOps <{EMAIL_USER}>"
+    msg["From"] = f"Zion FinOps <{EMAIL_USER}>"
     msg["To"] = ", ".join(recipients)
     msg.set_content(
         f"Hello Team,\n\n"
@@ -160,7 +160,12 @@ def send_email(filepath, total_cost, recipients: List[str]):
 
     file_type, _ = mimetypes.guess_type(filepath)
     with open(filepath, "rb") as f:
-        msg.add_attachment(f.read(), maintype=file_type.split('/')[0], subtype=file_type.split('/')[1], filename=os.path.basename(filepath))
+        msg.add_attachment(
+            f.read(),
+            maintype=file_type.split('/')[0],
+            subtype=file_type.split('/')[1],
+            filename=os.path.basename(filepath)
+        )
 
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.starttls()
