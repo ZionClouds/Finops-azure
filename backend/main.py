@@ -4,7 +4,7 @@ import requests
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-from typing import Dict, Lis
+from typing import Dict, List
 from openpyxl import Workbook
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
