@@ -147,7 +147,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
         raise ValueError("Recipients list is empty")
 
     msg = EmailMessage()
-    msg["Subject"] = "Azure Billing Summary"
+    msg["Subject"] = "Azure Billing Report"
     msg["From"] = EMAIL_USER
     msg["To"] = ", ".join(recipients)
     msg.set_content(
