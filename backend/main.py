@@ -4,7 +4,7 @@ import requests
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, Lis
 from openpyxl import Workbook
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -148,7 +148,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
 
     msg = EmailMessage()
     msg["Subject"] = "Azure Billing Summary"
-    msg["From"] = EMAIL_USER
+    msg["From"] = "ZCS FinOps <{EMAIL_USER}>"
     msg["To"] = ", ".join(recipients)
     msg.set_content(
         f"Hello Team,\n\n"
