@@ -148,7 +148,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
 
     msg = EmailMessage()
     msg["Subject"] = "Azure Billing Summary"
-    msg["From"] = f"Zion FinOps <{EMAIL_USER}>"
+    msg["From"] = f"ZCS FinOps <{EMAIL_USER}>"
     msg["To"] = ", ".join(recipients)
     msg.set_content(
         f"Hello Team,\n\n"
@@ -171,6 +171,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
         server.starttls()
         server.login(EMAIL_USER, EMAIL_PASSWORD)
         server.send_message(msg)
+
 
 # ---------------------------------------------------
 # API Payload Model
