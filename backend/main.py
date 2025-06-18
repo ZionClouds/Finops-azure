@@ -148,7 +148,7 @@ def send_email(filepath, total_cost, recipients: List[str]):
 
     msg = EmailMessage()
     msg["Subject"] = "Azure Billing Summary"
-    msg["From"] = f"ZCS FinOps <{EMAIL_USER}>"
+    msg["From"] = EMAIL_USER
     msg["To"] = ", ".join(recipients)
     msg.set_content(
         f"Hello Team,\n\n"
