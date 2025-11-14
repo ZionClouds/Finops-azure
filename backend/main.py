@@ -18,17 +18,31 @@ app = FastAPI()
 # ---------------------------------------------------
 # Azure Authentication
 # ---------------------------------------------------
+import requests
+from urllib.parse import urlencode
+
 def get_token(tenant_id, client_id, client_secret):
     url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
     payload = {
         "client_id": client_id,
         "client_secret": client_secret,
         "grant_type": "client_credentials",
         "scope": "https://management.azure.com/.default"
     }
-    response = requests.post(url, data=payload)
+
+    # urlencode handles all special characters correctly
+    data = urlencode(payload)
+    response = requests.post(url, headers=headers, data=data)
+    if not response.ok:
+        print("❌ Token request failed:", response.status_code, response.text)
     response.raise_for_status()
-    return response.json()["access_token"]
+
+    token = response.json()["access_token"]
+    print("✅ Token retrieved successfully")
+    return token
+
 
 # ---------------------------------------------------
 # Unified Cost Fetcher (Service + Resource Group level)
