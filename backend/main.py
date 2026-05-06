@@ -2,6 +2,7 @@ import os
 import mimetypes
 import requests
 import smtplib
+import traceback
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 from typing import Dict, List
@@ -181,10 +182,17 @@ def send_email(filepath, total_cost, recipients: List[str]):
             filename=os.path.basename(filepath)
         )
 
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+    print(f"🔌 Connecting to {SMTP_SERVER}:{SMTP_PORT}", flush=True)
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+        server.set_debuglevel(1)
+        server.ehlo()
         server.starttls()
+        server.ehlo()
+        print(f"🔑 Logging in as {EMAIL_USER}", flush=True)
         server.login(EMAIL_USER, EMAIL_PASSWORD)
+        print(f"📨 Sending message to {recipients}", flush=True)
         server.send_message(msg)
+    print(f"✅ Email sent to {', '.join(recipients)} (Total: ${total_cost:.2f})", flush=True)
 
 
 # ---------------------------------------------------
@@ -228,8 +236,9 @@ async def scan(request: ScanRequest):
         return {"status": "success", "total_cost": total_cost}
 
     except Exception as e:
-        print("🔥 Exception occurred:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ /scan/azure-cost failed: {type(e).__name__}: {e}", flush=True)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
 if __name__ == "__main__":
     import uvicorn
